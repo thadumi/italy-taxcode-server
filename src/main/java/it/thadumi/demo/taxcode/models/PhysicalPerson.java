@@ -17,11 +17,11 @@ public class PhysicalPerson {
     LocalDate dateOfBirth;
     String birthplace;
 
-    Sex sex;
+    Gender gender;
 
 
-    public enum Sex {
-        MALE(),
-        FEMALE();
+    public enum Gender {
+        MALE,
+        FEMALE;
     }
 }

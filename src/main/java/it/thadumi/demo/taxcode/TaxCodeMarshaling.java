@@ -49,11 +49,11 @@ class TaxCodeMarshaling {
         return marshalName(fstName, NAME_MARSHAL_LENGTH, consonantsRule);
     }
 
-    public CharSeq marshalDateOfBirth(LocalDate dateOfBirth, PhysicalPerson.Sex sex) {
+    public CharSeq marshalDateOfBirth(LocalDate dateOfBirth, PhysicalPerson.Gender gender) {
         return CharSeq.empty()
                     .concat(marshalYear(dateOfBirth.getYear()))
                     .concat(marshalMonth(dateOfBirth.getMonth()))
-                    .concat(marshalDay(dateOfBirth.getDayOfMonth(), sex));
+                    .concat(marshalDay(dateOfBirth.getDayOfMonth(), gender));
     }
 
     public Option<CharSeq> marshalBirthplace(String birthplace) {
@@ -74,8 +74,8 @@ class TaxCodeMarshaling {
         return monthService.mapMonth(month);
     }
 
-    private CharSeq marshalDay(int day, PhysicalPerson.Sex sex) {
-        if (sex == PhysicalPerson.Sex.FEMALE)
+    private CharSeq marshalDay(int day, PhysicalPerson.Gender gender) {
+        if (gender == PhysicalPerson.Gender.FEMALE)
             day += 40;
 
         return CharSeq(Integer.toString(day)).leftPadTo(2, '0');

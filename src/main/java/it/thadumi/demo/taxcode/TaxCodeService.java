@@ -55,7 +55,7 @@ public class TaxCodeService {
     }
 
     private Either<MarshalingError, CharSeq> birthDateMarshaling(PhysicalPerson person) {
-        return Right(maxcodeMarshaller.marshalDateOfBirth(person.getDateOfBirth(), person.getSex()));
+        return Right(maxcodeMarshaller.marshalDateOfBirth(person.getDateOfBirth(), person.getGender()));
     }
 
     private Either<MarshalingError, CharSeq> birthPlaceMarshaling(PhysicalPerson person) {
