@@ -1,23 +1,16 @@
 package it.thadumi.demo.taxcode;
 
+import java.time.Month;
+import java.time.Year;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import io.vavr.Tuple2;
-import io.vavr.Function1;
 import io.vavr.collection.CharSeq;
-import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
-import it.thadumi.demo.taxcode.errors.MarshallingError;
-import it.thadumi.demo.taxcode.models.PhysicalPerson;
+import it.thadumi.demo.commons.NumberUtils;
 import it.thadumi.demo.taxcode.models.PhysicalPerson.Gender;
-
-import static io.vavr.API.*;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.Year;
 
 @ApplicationScoped
 public class TaxCodeUnmarshalling {
@@ -37,60 +30,44 @@ public class TaxCodeUnmarshalling {
         return controlCharService.removeControlCharacters(taxCode);
     }
 
-    public Tuple2<CharSeq, CharSeq> unmarshalSurname(CharSeq taxCode) {
-        var surnameChars = taxCode.subSequence(0, 3);
-        var leftOver = taxCode.subSequence(3);
-        return Tuple(leftOver, surnameChars);
+    public Try<Integer> unmarshalYear(CharSeq taxCode) {
+        var yearChars = Try.of(() -> taxCode.subSequence(6, 8));
+
+        return yearChars.flatMap(NumberUtils::asInteger)
+                .map(byear -> byear > currentYear() ? (1900 + byear) : (2000 + byear));
     }
 
-    public Tuple2<CharSeq, CharSeq> unmarshalFirstname(CharSeq leftOverTaxCode) {
-        var firstnameChars = leftOverTaxCode.subSequence(0, 3);
-        var leftOver = leftOverTaxCode.subSequence(3);
-
-        return Tuple(leftOver, firstnameChars);
+    public Option<Month> unmarshalMonth(CharSeq taxCode) {
+        return monthService.mapMonth(taxCode.get(8));
     }
 
-    public Tuple2<CharSeq, Option<Integer>> unmarshalYear(CharSeq leftOverTaxCode) {
-        var yearChars = leftOverTaxCode.subSequence(0, 2);
-
-        var year = Try.of(() -> Integer.parseInt(yearChars.toString()))
-                      .toOption();
-        
-        var leftOver = leftOverTaxCode.subSequence(2);
-
-        return Tuple(leftOver, year);
+    public Try<Integer> unmarshalDay(CharSeq taxCode) {
+        return extractDayOfBirthday(taxCode)
+                .map(day -> day > 31 ? day - 40 : day);
     }
 
-    public Tuple2<CharSeq, Option<Month>> unmarshalMonth(CharSeq leftOverTaxCode) {
-        var month = monthService.mapMonth(leftOverTaxCode.get());
-        var leftOver = leftOverTaxCode.subSequence(1);
+    public  Try<Gender> unmarshalGender(CharSeq taxCode) {
+        var dayOfBirth = extractDayOfBirthday(taxCode);
 
-        return Tuple(leftOver, month);
+        return dayOfBirth.map(day -> day > 31 ? Gender.FEMALE : Gender.MALE);
     }
 
-    public Tuple2<CharSeq, Option<Gender>> unmarshalGender(CharSeq leftOverTaxCode) {
-        var gender = extractDayOfBirth(leftOverTaxCode)
-                        .map(day -> day > 31 ? Gender.FEMALE : Gender.MALE);
-        
-        return Tuple(leftOverTaxCode, gender);
+    public Try<CharSeq> unmarshalBirthPlace(CharSeq taxCode) {
+        var birthPlaceCode = Try.of(() -> taxCode.subSequence(11, 15));
+
+        return birthPlaceCode.map(istatCode -> italyService.municipalityHavingIstatCode(istatCode)
+                .orElse(() -> nationService.nationHavingIstatCode(istatCode)))
+                .flatMap(Option::toTry);
     }
 
-    public Tuple2<CharSeq, Option<Integer>> unmarshalDay(CharSeq leftOverTaxCode) {
-        var dayOfBirth = extractDayOfBirth(leftOverTaxCode);
-        var leftOver = leftOverTaxCode.substring(2);
-
-        return Tuple(leftOver, dayOfBirth);
+    private int currentYear() {
+        return Year.now().getValue() % 100;
     }
 
-    public Option<CharSeq> unmarshalBirthPlace(CharSeq leftOverTaxCode) {
-        return italyService.municipalityHavingIstatCode(leftOverTaxCode)
-                           .orElse(() -> nationService.nationHavingIstatCode(leftOverTaxCode));
-    }
+    private Try<Integer> extractDayOfBirthday(CharSeq taxCode) {
+        var dayOfBirthChars = Try.of(() -> taxCode.subSequence(9, 11));
 
-    private Option<Integer> extractDayOfBirth(CharSeq leftOverTaxCode) {
-        var dayChars = leftOverTaxCode.subSequence(0, 2);
+        return dayOfBirthChars.flatMap(NumberUtils::asInteger);
 
-        return Try.of(() -> Integer.parseInt(dayChars.toString()))
-                  .toOption();
     }
 }

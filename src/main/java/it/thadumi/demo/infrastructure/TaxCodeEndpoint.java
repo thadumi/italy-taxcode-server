@@ -72,10 +72,10 @@ public class TaxCodeEndpoint {
     public Response personInformationFrom(TaxCodeModel taxCode) {
         return taxCodeService.unmarshal(taxCode.getTaxCode())
                             .fold(error -> Response.serverError()
-                                            .status(500)
-                                            .entity(ResponseErrorModel.of(error.getMessage())),
+                                                   .status(500)
+                                                   .entity(ResponseErrorModel.of(error.getMessage())),
                                     person -> Response.status(Response.Status.OK)
-                                            .entity(person))
+                                                      .entity(person))
                 .build();
     }
 
