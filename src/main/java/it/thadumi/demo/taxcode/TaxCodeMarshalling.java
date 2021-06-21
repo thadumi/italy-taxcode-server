@@ -18,7 +18,7 @@ import static it.thadumi.demo.taxcode.Config.NAME_MARSHAL_LENGTH;
 import static it.thadumi.demo.taxcode.Config.SURNAME_MARSHAL_LENGTH;
 
 @ApplicationScoped
-class TaxCodeMarshaling {
+class TaxCodeMarshalling {
     @Inject
     private MonthService monthService;
 

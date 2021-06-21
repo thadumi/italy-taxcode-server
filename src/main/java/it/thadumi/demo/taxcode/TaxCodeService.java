@@ -18,7 +18,7 @@ import static it.thadumi.demo.commons.StringUtils.isEmpty;
 @ApplicationScoped
 public class TaxCodeService {
     @Inject
-    TaxCodeMarshaling maxcodeMarshaller;
+    TaxCodeMarshalling maxcodeMarshaller;
 
     public Either<MarshalingError, String> marshal(PhysicalPerson person) {
         return emptyMarshaling()
@@ -30,7 +30,7 @@ public class TaxCodeService {
                 .map(CharSeq::toString);
     }
 
-    public Either<MarshalingError, PhysicalPerson> unmarshal(String cf) {
+    public Either<MarshalingError, PhysicalPerson> unmarshal(String taxCode) {
         // assert length 16
         return Either.left(null);
     }

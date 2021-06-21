@@ -34,7 +34,7 @@ public class TaxCodeEndpoint {
                                     schema = @Schema(implementation = ResponseErrorModel.class))),
                     @APIResponse(
                             responseCode = "200",
-                            description = "The tax code of the requested person",
+                            description = "The tax code of the requested person.",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = TaxCodeModel.class)))
             }
@@ -63,7 +63,8 @@ public class TaxCodeEndpoint {
                                     schema = @Schema(implementation = ResponseErrorModel.class))),
                     @APIResponse(
                             responseCode = "200",
-                            description = "The person's information from the given tax code",
+                            description = "The person's information from the given tax code. " +
+                                          "Note that the firstname and surname cannot be provided.",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = PhysicalPerson.class)))
             }
