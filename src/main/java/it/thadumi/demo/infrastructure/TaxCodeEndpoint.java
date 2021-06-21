@@ -64,7 +64,7 @@ public class TaxCodeEndpoint {
                     @APIResponse(
                             responseCode = "200",
                             description = "The person's information from the given tax code. " +
-                                          "Note that the firstname and surname cannot be provided.",
+                                          "Note that the firstname and surname cannot be provided and therefore will be empty.",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = PhysicalPerson.class)))
             }
