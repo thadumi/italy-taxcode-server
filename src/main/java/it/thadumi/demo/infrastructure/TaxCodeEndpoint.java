@@ -36,7 +36,7 @@ public class TaxCodeEndpoint {
                             responseCode = "200",
                             description = "The tax code of the requested person",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ResponseModel.class)))
+                                    schema = @Schema(implementation = TaxCodeModel.class)))
             }
     )
     public Response taxCodeOf(PhysicalPerson person) {
@@ -46,18 +46,46 @@ public class TaxCodeEndpoint {
                                                     .status(500)
                                                     .entity(ResponseErrorModel.of(error.getMessage())),
                                    taxCode -> Response.status(Response.Status.OK)
-                                                      .entity(ResponseModel.of(taxCode)))
+                                                      .entity(TaxCodeModel.of(taxCode)))
+                .build();
+    }
+
+    @GET
+    @Path("/unmarshal")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @APIResponses(
+            value = {
+                    @APIResponse(
+                            responseCode = "500",
+                            description = "Some error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ResponseErrorModel.class))),
+                    @APIResponse(
+                            responseCode = "200",
+                            description = "The person's information from the given tax code",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = PhysicalPerson.class)))
+            }
+    )
+    public Response personInformationFrom(TaxCodeModel taxCode) {
+        return taxCodeService.unmarshal(taxCode.getTaxCode())
+                            .fold(error -> Response.serverError()
+                                            .status(500)
+                                            .entity(ResponseErrorModel.of(error.getMessage())),
+                                    person -> Response.status(Response.Status.OK)
+                                            .entity(person))
                 .build();
     }
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ResponseModel {
+    public static class TaxCodeModel {
         private String taxCode;
 
-        public static ResponseModel of(String taxCode) {
-            return new ResponseModel(taxCode);
+        public static TaxCodeModel of(String taxCode) {
+            return new TaxCodeModel(taxCode);
         }
     }
 
