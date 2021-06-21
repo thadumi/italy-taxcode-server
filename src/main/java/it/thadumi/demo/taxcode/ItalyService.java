@@ -25,12 +25,12 @@ class ItalyService {
         return repo.exists(place);
     }
 
-    public Option<CharSeq> municipalityOf(String istatCode) {
+    public Option<CharSeq> municipalityHavingIstatCode(String istatCode) {
         return repo.getMunicipalityHavingIstatCode(istatCode)
                    .map(API::CharSeq);
     }
     
-    public Option<CharSeq> municipalityOf(CharSeq istatCode) {
-        return municipalityOf(istatCode.toString());
+    public Option<CharSeq> municipalityHavingIstatCode(CharSeq istatCode) {
+        return municipalityHavingIstatCode(istatCode.toString());
     }
 }
