@@ -1,0 +1,24 @@
+SELECT DISTINCT ?item ?itemLabel ?ISTATID ?tipo
+WHERE {
+    {
+        ?item wdt:P31 wd:Q747074.
+        wd:Q747074 rdfs:label ?tipo.
+        FILTER(LANG(?tipo) = "en").
+        OPTIONAL {?item p:P806 ?ISTATIDP.
+                  ?ISTATIDP ps:P806 ?ISTATID.
+        }
+        ?item p:P31 ?checkattivo.
+        ?checkattivo ps:P31 wd:Q747074;
+    } UNION {
+        ?item wdt:P31 wd:Q954172.
+        wd:Q954172 rdfs:label ?tipo.
+        FILTER(LANG(?tipo) = "en").
+        OPTIONAL {?item p:P635 ?ISTATIDP.
+                  ?ISTATIDP ps:P635 ?ISTATID.
+        }
+        ?item p:P31 ?checkattivo.
+        ?checkattivo ps:P31 wd:Q954172;
+    }
+    FILTER NOT EXISTS { ?checkattivo pq:P582 ?x }
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],it". }
+}
