@@ -4,12 +4,10 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-// lombok
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-// quarkus native requirements
 public class PhysicalPerson {
     String firstname;
     String surname;
