@@ -1,6 +1,5 @@
 package it.thadumi.demo.taxcode.repo.impl;
 
-import io.vavr.API;
 import io.vavr.Function1;
 import io.vavr.Tuple2;
 import io.vavr.collection.CharSeq;
