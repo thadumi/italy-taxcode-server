@@ -17,12 +17,25 @@ class NationService {
         return repo.getIstatID(nation).map(API::CharSeq);
     }
 
+    public Option<CharSeq> istatCodeOf(CharSeq nation) {
+        return istatCodeOf(nation.toString());
+    }
+
+
     public Option<CharSeq> nationHavingIstatCode(String code) {
         return repo.getNationHavingIstatCode(code).map(API::CharSeq);
     }
 
+    public Option<CharSeq> nationHavingIstatCode(CharSeq code) {
+        return nationHavingIstatCode(code.toString());
+    }
+
     public boolean isaNation(String nationName) {
         return repo.exists(nationName);
+    }
+
+    public boolean isaNation(CharSeq nationName) {
+        return isaNation(nationName.toString());
     }
 
 }
