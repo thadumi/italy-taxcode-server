@@ -6,7 +6,6 @@ import io.vavr.collection.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import static io.vavr.API.Tuple;
 import static io.vavr.collection.HashMap.ofEntries;
 import static io.vavr.collection.Map.entry;
 import static it.thadumi.demo.commons.StringUtils.replaceCharAtPosition;
