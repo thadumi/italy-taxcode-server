@@ -1,6 +1,6 @@
 package it.thadumi.demo.taxcode.errors;
 
-public class FragmentGenerationError extends MarshalingError {
+public class FragmentGenerationError extends MarshallingError {
     public FragmentGenerationError(String message) {
         super(message);
     }
