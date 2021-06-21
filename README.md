@@ -11,4 +11,4 @@ A simple italian taxcode server build with OpenLiberty' features.
 To run the application run at the root of the project
 > mvn liberty:run
 
-The api are available at `http://localhost:9080/openapi` and `http://localhost:9080/openapi/ui`
+The APIs schema is available at `http://localhost:9080/openapi` and `http://localhost:9080/openapi/ui`
