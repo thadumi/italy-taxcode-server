@@ -1,9 +1,9 @@
 package it.thadumi.demo.taxcode.repo;
 
-import io.vavr.collection.CharSeq;
 import io.vavr.control.Option;
 
 public interface NationRepo {
-    Option<CharSeq> getIstatID(String id);
-    boolean exists(String id);
+    Option<String> getIstatID(String nationName);
+    boolean exists(String nationName);
+    Option<String> getNationHavingIstatCode(String code);
 }

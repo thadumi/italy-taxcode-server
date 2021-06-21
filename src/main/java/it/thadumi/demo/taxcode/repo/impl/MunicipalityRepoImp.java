@@ -3,16 +3,17 @@ package it.thadumi.demo.taxcode.repo.impl;
 import com.bordercloud.sparql.SparqlClient;
 import com.bordercloud.sparql.SparqlClientException;
 import com.bordercloud.sparql.SparqlResultModel;
-import io.vavr.API;
 import io.vavr.Function1;
 import io.vavr.Tuple2;
 import io.vavr.collection.CharSeq;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
+import it.thadumi.demo.commons.CollectionsUtils;
 import it.thadumi.demo.commons.ResourceLoader;
 import it.thadumi.demo.taxcode.repo.MunicipalityRepo;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.apache.commons.collections4.BidiMap;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Initialized;
@@ -33,15 +34,18 @@ public class MunicipalityRepoImp implements MunicipalityRepo {
     private RepoBackend backend;
 
     @Override
-    public Option<CharSeq> getIstatID(String id) {
-        return backend.getTable()
-                      .get(id)
-                      .map(API::CharSeq);
+    public Option<String> getIstatID(String name) {
+        return Option.of(backend.getTable().get(name));
     }
 
     @Override
-    public boolean exists(String id) {
-        return getIstatID(id).isDefined();
+    public boolean exists(String name) {
+        return getIstatID(name).isDefined();
+    }
+
+    @Override
+    public Option<String> getMunicipalityHavingIstatCode(String code) {
+        return Option.of(backend.getReversedTable().get(code));
     }
 
     @Default
@@ -56,10 +60,15 @@ public class MunicipalityRepoImp implements MunicipalityRepo {
         @ConfigProperty(name = "repo.municipality.query")
         private String queryPath;
 
-        private Map<String, String> municipalities;
-
-        public Map<String, String> getTable() {
+        // Key := Municipal Name; Value := IstatCode
+        private BidiMap<String, String> municipalities;
+        
+        public BidiMap<String, String> getTable() {
             return municipalities;
+        }
+
+        public BidiMap<String, String> getReversedTable() {
+            return municipalities.inverseBidiMap();
         }
 
         //@PostConstruct
@@ -70,12 +79,12 @@ public class MunicipalityRepoImp implements MunicipalityRepo {
                                     System.exit(-1);
                                 })
                                 .onSuccess(data ->{
-                                    System.out.println("Loaded the istat code of " + data.length() + " municipalities.");
+                                    System.out.println("Loaded the istat code of " + data.size() + " municipalities.");
                                 })
                                 .get();
         }
 
-        private Try<Map<String, String>> retrieveData() {
+        private Try<BidiMap<String, String>> retrieveData() {
             Function1< List<HashMap<String, Object>>, Stream<Tuple2<String, String>>> extractMunicipalitiesData =
                     rows -> rows.stream().map(row -> Tuple((String) row.get("itemLabel"), (String)row.get("ISTATID")));
 
@@ -84,7 +93,8 @@ public class MunicipalityRepoImp implements MunicipalityRepo {
 
             return getWikidataData()
                     .map(extractMunicipalitiesData)
-                    .map(municipalitiesDataAsMap);
+                    .map(municipalitiesDataAsMap)
+                    .map(CollectionsUtils::asBidiMap);
         }
 
         private Try<List<HashMap<String, Object>>> getWikidataData() {

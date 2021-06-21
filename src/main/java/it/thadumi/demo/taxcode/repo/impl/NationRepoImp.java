@@ -8,8 +8,11 @@ import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
+import it.thadumi.demo.commons.CollectionsUtils;
 import it.thadumi.demo.commons.ResourceLoader;
 import it.thadumi.demo.taxcode.repo.NationRepo;
+
+import org.apache.commons.collections4.BidiMap;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -22,24 +25,22 @@ import static io.vavr.API.Tuple;
 
 @ApplicationScoped
 public class NationRepoImp implements NationRepo {
-
+    @Inject
     private RepoFileBackend backend;
 
-    @Inject
-    public NationRepoImp(RepoFileBackend rb) {
-        backend = rb;
+    @Override
+    public Option<String> getIstatID(String name) {
+        return Option.of(backend.getTable().get(name));
     }
 
     @Override
-    public Option<CharSeq> getIstatID(String id) {
-        return backend.getTable()
-                .get(id)
-                .map(API::CharSeq);
+    public boolean exists(String name) {
+        return getIstatID(name).isDefined();
     }
 
     @Override
-    public boolean exists(String id) {
-        return getIstatID(id).isDefined();
+    public Option<String> getNationHavingIstatCode(String code) {
+        return Option.of(backend.getReversedTable().get(code));
     }
 
     @Default
@@ -49,10 +50,14 @@ public class NationRepoImp implements NationRepo {
         @ConfigProperty(name = "repo.nation.dbPath")
         private String dbPath;
 
-        private Map<String, String> nations;
+        private BidiMap<String, String> nations;
 
-        public Map<String, String> getTable() {
+        public BidiMap<String, String> getTable() {
             return nations;
+        }
+
+        public BidiMap<String, String> getReversedTable() {
+            return nations.inverseBidiMap();
         }
 
         //@PostConstruct
@@ -64,16 +69,18 @@ public class NationRepoImp implements NationRepo {
                             throwable.printStackTrace();
                             System.exit(-1);
                         })
-                        .onSuccess(data -> System.out.printf("Nations' db loaded. %d entries known.%n", data.length()))
+                        .onSuccess(data -> System.out.printf("Nations' db loaded. %d entries known.%n", data.size()))
                         .get();
         }
 
-        private Try<Map<String, String>> retrieveData() {
+        private Try<BidiMap<String, String>> retrieveData() {
             Function1<Seq<Tuple2<String, String>>, Map<String,String>> dataToMap =
                     rows -> rows.toMap(Function1.identity());
 
+            
             return loadDBRows(dbPath)
-                    .map(dataToMap);
+                    .map(dataToMap)
+                    .map(CollectionsUtils::asBidiMap);
         }
 
         private Try<Seq<Tuple2<String, String>>> loadDBRows(String dbPath)  {
