@@ -15,26 +15,26 @@ import static it.thadumi.demo.commons.StringUtils.replaceCharAtPosition;
 @ApplicationScoped
 class ControlCharService {
 
-    public CharSeq appendControlCharacter(CharSeq cf) {
-        var sum = cf.zipWithIndex()
+    public CharSeq appendControlCharacter(CharSeq taxCode) {
+        var sum = taxCode.zipWithIndex()
                     .map(item -> isEven(item._2 + 1) ? evenCharCode(item._1) : oddCharCode(item._1))
                     .sum()
                     .intValue() % 26;
         var sumCode =   (char) (sum + 65);
 
-        // if (exists(cf)) return withHomocodyControll(cf)
-        return cf.append(sumCode);
+        // if (exists(taxCode)) return withHomocodyControll(taxCode)
+        return taxCode.append(sumCode);
     }
 
-    public CharSeq removeControlCharacters(CharSeq cf) {
-        return removeHomocodyChars(cf)
-                .subSequence(0, cf.length()-1);
+    public CharSeq removeControlCharacters(CharSeq taxCode) {
+        return removeHomocodyChars(taxCode)
+                .subSequence(0, taxCode.length()-1);
     }
 
-    private CharSeq removeHomocodyChars(CharSeq cf) {
+    private CharSeq removeHomocodyChars(CharSeq taxCode) {
         for(var index : HOMOCODY_POSITION)
-            cf = replaceCharAtPosition(index, decodeHomocodyChar(cf.get(index)), cf);
-        return cf;
+            taxCode = replaceCharAtPosition(index, decodeHomocodyChar(taxCode.get(index)), taxCode);
+        return taxCode;
     }
 
     private Character decodeHomocodyChar(Character ch) {
