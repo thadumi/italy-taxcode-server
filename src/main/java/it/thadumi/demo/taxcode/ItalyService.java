@@ -13,6 +13,12 @@ class ItalyService {
     @Inject
     private MunicipalityRepo repo;
 
+    public ItalyService() {}
+
+    public ItalyService(MunicipalityRepo repo) {
+        this.repo = repo;
+    }
+
     public Option<CharSeq> istatCodeOf(String place) {
         return repo.getIstatID(place).map(API::CharSeq);
     }
@@ -29,7 +35,7 @@ class ItalyService {
         return repo.getMunicipalityHavingIstatCode(istatCode)
                    .map(API::CharSeq);
     }
-    
+
     public Option<CharSeq> municipalityHavingIstatCode(CharSeq istatCode) {
         return municipalityHavingIstatCode(istatCode.toString());
     }

@@ -13,6 +13,12 @@ class NationService {
     @Inject
     private NationRepo repo;
 
+    public NationService() {}
+
+    public NationService(NationRepo repo) {
+        this.repo = repo;
+    }
+
     public Option<CharSeq> istatCodeOf(String nation) {
         return repo.getIstatID(nation).map(API::CharSeq);
     }

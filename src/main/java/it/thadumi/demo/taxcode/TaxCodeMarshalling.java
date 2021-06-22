@@ -31,6 +31,15 @@ class TaxCodeMarshalling {
     @Inject
     private ControlCharService controlCharService;
 
+    public TaxCodeMarshalling() {}
+
+    public TaxCodeMarshalling(MonthService monthService, NationService nationService, ItalyService italyService, ControlCharService controlCharService) {
+        this.monthService = monthService;
+        this.nationService = nationService;
+        this.italyService = italyService;
+        this.controlCharService = controlCharService;
+    }
+
     public CharSeq marshalSurname(String surname) {
         Function1<CharSeq, CharSeq> consonantsRule = consonants ->
                 consonants.length() >= SURNAME_MARSHAL_LENGTH
@@ -71,15 +80,15 @@ class TaxCodeMarshalling {
         return controlCharService.appendControlCharacter(cs);
     }
 
-    private CharSeq marshalYear(int year) {
+    CharSeq marshalYear(int year) {
         return CharSeq(Integer.toString(year % 100));
     }
 
-    private CharSeq marshalMonth(Month month) {
+    CharSeq marshalMonth(Month month) {
         return monthService.mapMonth(month);
     }
 
-    private CharSeq marshalDay(int day, PhysicalPerson.Gender gender) {
+    CharSeq marshalDay(int day, PhysicalPerson.Gender gender) {
         if (gender == PhysicalPerson.Gender.FEMALE)
             day += 40;
 

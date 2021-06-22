@@ -22,7 +22,6 @@ import static java.util.Objects.isNull;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Objects;
 
 @ApplicationScoped
 public class TaxCodeService {
@@ -32,6 +31,12 @@ public class TaxCodeService {
     @Inject
     TaxCodeUnmarshalling unmarshaller;
 
+    public TaxCodeService() {}
+
+    public TaxCodeService(TaxCodeMarshalling marshaller, TaxCodeUnmarshalling unmarshaller) {
+        this.marshaller = marshaller;
+        this.unmarshaller = unmarshaller;
+    }
 
     public Either<MarshallingError, String> marshal(PhysicalPerson person) {
         return emptyMarshalling()
