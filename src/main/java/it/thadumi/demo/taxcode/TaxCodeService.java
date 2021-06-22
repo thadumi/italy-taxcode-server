@@ -47,13 +47,13 @@ public class TaxCodeService {
     }
 
     private  Either<UnmarshallingError, PhysicalPerson> extractPersonInformationFrom(CharSeq taxCode) {
+        var surname = unmarshalSurname(taxCode);
+        var firstname = unmarshalFirstname(taxCode);
         var dob = unmarshalDateOfBirth(taxCode);
         var gender = unmarshalGender(taxCode);
         var birthPlace = unmarshalBirthPlace(taxCode);
 
-        var extractedData = For(dob, birthPlace, gender)
-                .yield(Tuple::of)
-                .map(Tuple(CharSeq.empty(), CharSeq.empty())::concat);
+        var extractedData = For(surname, firstname, dob, birthPlace, gender).yield(Tuple::of);
 
         var extractedPerson = extractedData.map(PhysicalPerson::fromTuple);
 
@@ -104,6 +104,18 @@ public class TaxCodeService {
             return Left(UnmarshallingError.because("Length of tax-code expected to be 16 but was " + taxCode.length()));
 
         return Right(unmarshaller.removeControlChar(taxCode));
+    }
+
+    private Either<UnmarshallingError, CharSeq> unmarshalSurname(CharSeq taxCode) {
+        return unmarshaller.unmarshalSurname(taxCode)
+                            .toEither()
+                            .mapLeft(cause -> UnmarshallingError.because("Unable to extract the surname " + taxCode , cause));
+    }
+
+    private Either<UnmarshallingError, CharSeq> unmarshalFirstname(CharSeq taxCode) {
+        return unmarshaller.unmarshalFirstname(taxCode)
+                .toEither()
+                .mapLeft(cause -> UnmarshallingError.because("Unable to extract the firstname " + taxCode , cause));
     }
 
     private Either<UnmarshallingError, LocalDate> unmarshalDateOfBirth(CharSeq taxCode) {

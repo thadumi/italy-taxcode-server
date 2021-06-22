@@ -30,12 +30,21 @@ public class TaxCodeUnmarshalling {
         return controlCharService.removeControlCharacters(taxCode);
     }
 
+    public Try<CharSeq> unmarshalSurname(CharSeq taxCode) {
+        return extractSubSequence(taxCode, 0, 3);
+    }
+
+    public Try<CharSeq> unmarshalFirstname(CharSeq taxCode) {
+        return extractSubSequence(taxCode, 3, 6);
+    }
+
     public Try<Integer> unmarshalYear(CharSeq taxCode) {
-        var yearChars = Try.of(() -> taxCode.subSequence(6, 8));
+        var yearChars = extractSubSequence(taxCode, 6, 8);
 
         return yearChars.flatMap(NumberUtils::asInteger)
                 .map(byear -> byear > currentYear() ? (1900 + byear) : (2000 + byear));
     }
+
 
     public Option<Month> unmarshalMonth(CharSeq taxCode) {
         return monthService.mapMonth(taxCode.get(8));
@@ -53,7 +62,7 @@ public class TaxCodeUnmarshalling {
     }
 
     public Try<CharSeq> unmarshalBirthPlace(CharSeq taxCode) {
-        var birthPlaceCode = Try.of(() -> taxCode.subSequence(11, 15));
+        var birthPlaceCode = extractSubSequence(taxCode, 11, 15);
 
         return birthPlaceCode.map(istatCode -> italyService.municipalityHavingIstatCode(istatCode)
                 .orElse(() -> nationService.nationHavingIstatCode(istatCode)))
@@ -65,9 +74,12 @@ public class TaxCodeUnmarshalling {
     }
 
     private Try<Integer> extractDayOfBirthday(CharSeq taxCode) {
-        var dayOfBirthChars = Try.of(() -> taxCode.subSequence(9, 11));
+        var dayOfBirthChars = extractSubSequence(taxCode, 9, 11);
 
         return dayOfBirthChars.flatMap(NumberUtils::asInteger);
+    }
 
+    private Try<CharSeq> extractSubSequence(CharSeq taxCode, int start, int end) {
+        return Try.of(() -> taxCode.subSequence(start, end));
     }
 }
