@@ -57,8 +57,13 @@ class TaxCodeMarshalling {
     }
 
     public Option<CharSeq> marshalBirthplace(String birthplace) {
+        var bp = birthplace.toUpperCase();
+
+        if (bp.equals("ROMA"))
+            bp = "ROMA CAPITALE";
+
         return italyService
-                .istatCodeOf(birthplace)
+                .istatCodeOf(bp)
                 .orElse(() -> nationService.istatCodeOf(birthplace));
     }
 
