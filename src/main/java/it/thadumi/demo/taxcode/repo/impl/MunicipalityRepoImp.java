@@ -23,9 +23,11 @@ import javax.inject.Inject;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static io.vavr.API.*;
+import static it.thadumi.demo.commons.BoolUtils.not;
 
 @ApplicationScoped
 public class MunicipalityRepoImp implements MunicipalityRepo {
@@ -62,7 +64,7 @@ public class MunicipalityRepoImp implements MunicipalityRepo {
 
         // Key := Municipal Name; Value := IstatCode
         private BidiMap<String, String> municipalities;
-        
+
         public BidiMap<String, String> getTable() {
             return municipalities;
         }
@@ -88,11 +90,15 @@ public class MunicipalityRepoImp implements MunicipalityRepo {
             Function1< List<HashMap<String, Object>>, Stream<Tuple2<String, String>>> extractMunicipalitiesData =
                     rows -> rows.stream().map(row -> Tuple((String) row.get("itemLabel"), (String)row.get("ISTATID")));
 
+            Function1<Stream<Tuple2<String, String>>, Stream<Tuple2<String, String>>> removeEmptyRows =
+                    stream -> stream.filter(row -> not(row._1.isEmpty()) && not(row._2.isEmpty()));
+
             Function1< Stream<Tuple2<String, String>>, Map<String,String>> municipalitiesDataAsMap =
                     stream -> stream.reduce(Map(), Map::put, Map::merge);
 
             return getWikidataData()
                     .map(extractMunicipalitiesData)
+                    .map(removeEmptyRows)
                     .map(municipalitiesDataAsMap)
                     .map(CollectionsUtils::asBidiMap);
         }
