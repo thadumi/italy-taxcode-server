@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 
 import static io.vavr.API.*;
 import static it.thadumi.demo.commons.BoolUtils.not;
+import static it.thadumi.demo.commons.StringUtils.isEmpty;
 
 @ApplicationScoped
 public class MunicipalityRepoImp implements MunicipalityRepo {
@@ -80,9 +81,7 @@ public class MunicipalityRepoImp implements MunicipalityRepo {
                                     throwable.printStackTrace();
                                     System.exit(-1);
                                 })
-                                .onSuccess(data ->{
-                                    System.out.println("Loaded the istat code of " + data.size() + " municipalities.");
-                                })
+                                .onSuccess(data -> System.out.println("Loaded the istat code of " + data.size() + " municipalities."))
                                 .get();
         }
 
@@ -91,7 +90,7 @@ public class MunicipalityRepoImp implements MunicipalityRepo {
                     rows -> rows.stream().map(row -> Tuple((String) row.get("itemLabel"), (String)row.get("ISTATID")));
 
             Function1<Stream<Tuple2<String, String>>, Stream<Tuple2<String, String>>> removeEmptyRows =
-                    stream -> stream.filter(row -> not(row._1.isEmpty()) && not(row._2.isEmpty()));
+                    stream -> stream.filter(row -> not(isEmpty(row._1)) && not(isEmpty(row._2)));
 
             Function1< Stream<Tuple2<String, String>>, Map<String,String>> municipalitiesDataAsMap =
                     stream -> stream.reduce(Map(), Map::put, Map::merge);
