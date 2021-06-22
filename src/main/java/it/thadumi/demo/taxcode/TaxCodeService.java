@@ -16,10 +16,13 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import static io.vavr.API.*;
+import static it.thadumi.demo.commons.BoolUtils.not;
 import static it.thadumi.demo.commons.StringUtils.isEmpty;
+import static java.util.Objects.isNull;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Objects;
 
 @ApplicationScoped
 public class TaxCodeService {
@@ -41,7 +44,16 @@ public class TaxCodeService {
     }
 
     public Either<UnmarshallingError, PhysicalPerson> unmarshal(String taxCode) {
-        var cleanTaxCode = removeControlChars(CharSeq(taxCode));
+        var tc = CharSeq(taxCode).toUpperCase();
+
+        if(tc.length() != 16)
+            return Left(UnmarshallingError.because("Length of tax-code expected to be 16 but was " + taxCode.length()));
+
+        if(isNotAValidTaxCodeFormat(tc))
+            return Left(UnmarshallingError.because("Illegal format of the tax code provided."));
+
+
+        var cleanTaxCode = removeControlChars(tc);
 
         return cleanTaxCode.flatMap(this::extractPersonInformationFrom);
     }
@@ -83,10 +95,23 @@ public class TaxCodeService {
     }
 
     private Either<MarshallingError, CharSeq> birthDateMarshalling(PhysicalPerson person) {
+        if (isNull(person.getGender()))
+            return Left(FragmentGenerationError.because("Unknown gender"));
+
+        if (isNull(person.getDateOfBirth()))
+            return Left(FragmentGenerationError.because("Unknown date of birth"));
+
+        var todayDate = LocalDate.now();
+        if (person.getDateOfBirth().isAfter(todayDate)) // the person is yet to be born
+            return Left(FragmentGenerationError.because("Exceeded the date limit of " + todayDate));
+
         return Right(marshaller.marshalDateOfBirth(person.getDateOfBirth(), person.getGender()));
     }
 
     private Either<MarshallingError, CharSeq> birthPlaceMarshalling(PhysicalPerson person) {
+        if (isEmpty(person.getBirthplace()))
+            return Left(FragmentGenerationError.because("The birthplace was not provided"));
+
         return marshaller
                 .marshalBirthplace(person.getBirthplace())
                 .toEither(() -> FragmentGenerationError.because("Unknown ISTAT code for the birth place " + person.getBirthplace()));
@@ -100,9 +125,6 @@ public class TaxCodeService {
     }
 
     private Either<UnmarshallingError, CharSeq> removeControlChars(CharSeq taxCode) {
-        if(taxCode.length() != 16)
-            return Left(UnmarshallingError.because("Length of tax-code expected to be 16 but was " + taxCode.length()));
-
         return Right(unmarshaller.removeControlChar(taxCode));
     }
 
@@ -182,5 +204,9 @@ public class TaxCodeService {
     @FunctionalInterface
     interface MarshallingComputationStep
             extends Function1<PhysicalPerson, Either<MarshallingError, CharSeq>> {
+    }
+
+    private boolean isNotAValidTaxCodeFormat(CharSeq taxCode) {
+        return not(taxCode.matches("[A-Z]{6}[0-9]{2}[ABCDEHLMPRST]{1}[0-9]{2}[a-zA-Z]{1}[0-9]{3}[A-Z]{1}"));
     }
 }
