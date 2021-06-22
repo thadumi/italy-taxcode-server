@@ -76,9 +76,12 @@ public class NationRepoImp implements NationRepo {
             Function1<Seq<Tuple2<String, String>>, Map<String,String>> dataToMap =
                     rows -> rows.toMap(Function1.identity());
 
-            
+            Function1< Map<String, String>, Map<String, String>> toUpperCase =
+                    map -> map.bimap(String::toUpperCase, String::toUpperCase);
+
             return loadDBRows(dbPath)
                     .map(dataToMap)
+                    .map(toUpperCase)
                     .map(CollectionsUtils::asBidiMap);
         }
 

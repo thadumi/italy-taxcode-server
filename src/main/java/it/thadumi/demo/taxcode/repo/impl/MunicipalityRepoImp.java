@@ -96,11 +96,23 @@ public class MunicipalityRepoImp implements MunicipalityRepo {
             Function1< Stream<Tuple2<String, String>>, Map<String,String>> municipalitiesDataAsMap =
                     stream -> stream.reduce(Map(), Map::put, Map::merge);
 
-            return getWikidataData()
+            Function1< Map<String, String>, Map<String, String>> toUpperCase =
+                    map -> map.bimap(String::toUpperCase, String::toUpperCase);
+
+            var wikidataEntries = getWikidataData()
                     .map(extractMunicipalitiesData)
                     .map(removeEmptyRows)
-                    .map(municipalitiesDataAsMap)
+                    .map(municipalitiesDataAsMap);
+
+            var extendedEntries = wikidataEntries.map(this::insertAdditionalData);
+
+            return extendedEntries
+                    .map(toUpperCase)
                     .map(CollectionsUtils::asBidiMap);
+        }
+
+        private Map<String, String> insertAdditionalData(Map<String, String> map) {
+            return map.put("ROMA CAPITALE", "H501");
         }
 
         private Try<List<HashMap<String, Object>>> getWikidataData() {
