@@ -70,7 +70,7 @@ public class TaxCodeService {
         var gender = unmarshalGender(taxCode);
         var birthPlace = unmarshalBirthPlace(taxCode);
 
-        var extractedData = For(surname, firstname, dob, birthPlace, gender).yield(Tuple::of);
+        var extractedData = For(firstname, surname, dob, birthPlace, gender).yield(Tuple::of);
 
         var extractedPerson = extractedData.map(PhysicalPerson::fromTuple);
 
